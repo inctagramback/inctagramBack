@@ -14,26 +14,34 @@ datasource db {
 }
 
 model User {
-  id          String      @id @default(uuid())
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  createBy    String      @default("system")
-  updateBy    String      @default("system")
-  active      String      @default("false")
-
-  systemData  SystemData?
-  providers    Providers?
-}
-
-model SystemData {
-  id           String     @id @default(uuid())
-  login        String
+  id           String      @id @default(uuid())
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  createBy     String      @default("system")
+  updateBy     String      @default("system")
+  activeStatus       String      @default("true")
+  confirmationStatus Boolean @default(false)
   email        String     @unique
   passwordHash String
   passwordSalt String
-  userId       String     @unique
-  
-  user         User      @relation(fields: [userId], references: [id])
+  recoveryCode     String?   
+  confirmationCode String? 
+
+  devices  Device[]
+  providers    Providers?
+}
+
+
+model Device {
+  id            String   @id @default(uuid())
+  userId        String
+  deviceJwtKey  String
+  createdAt     DateTime @default(now())
+
+
+  user          User     @relation(fields: [userId], references: [id])
+
+
 }
 
 model Providers {

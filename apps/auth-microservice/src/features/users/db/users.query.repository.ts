@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+/* import { Injectable } from '@nestjs/common'
 import { PrismaService } from 'libs/service/prisma.Service'
 import { SystemData } from '../domain/entity/systemData'
 import { User } from '../domain/entity/user.entity'
@@ -18,8 +18,8 @@ export class UsersQueryRepository {
     })
     return resolve
   }
-
-  /*   async getAll(): Promise<ClientViewModel[]> {
+ */
+/*   async getAll(): Promise<ClientViewModel[]> {
     const clients = await this.ormRepo.find({})
     return clients.map(ClientsQueryRepository.mapClientEntityToClientViewModel)
   }
@@ -50,4 +50,3 @@ export class ClientViewModel {
   lastName: string
   @ApiProperty()
   address: string | null */
-}
