@@ -8,7 +8,7 @@ export class User extends BaseDomainEntity {
   passwordHash: string
   passwordSalt: string
   confirmationCode: string
-  recoveryCode: string | null
+  passwordResetCode: string | null
   constructor(email: string, passwordHash: string, passwordSalt: string, confirmationCode: string) {
     super()
     this.email = email

@@ -10,6 +10,13 @@ export class DeviceRepository extends BaseRepository<Device> {
   }
 
   async deleteAllDevicesByUserId(userId: string): Promise<void> {
-    await this.prisma.device.deleteMany({ where: { id: userId } })
+    await this.prisma.device.updateMany({
+      where: {
+        userId: userId,
+      },
+      data: {
+        active: 'false',
+      },
+    })
   }
 }

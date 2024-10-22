@@ -22,9 +22,10 @@ model User {
   activeStatus       String      @default("true")
   confirmationStatus Boolean @default(false)
   email        String     @unique
+  username String
   passwordHash String
   passwordSalt String
-  recoveryCode     String?   
+  passwordResetCode     String?   
   confirmationCode String? 
 
   devices  Device[]
@@ -33,9 +34,9 @@ model User {
 
 
 model Device {
-  id            String   @id @default(uuid())
+  id            String   @id 
   userId        String
-  deviceJwtKey  String
+  active        String
   createdAt     DateTime @default(now())
 
 
