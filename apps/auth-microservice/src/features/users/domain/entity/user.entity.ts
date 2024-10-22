@@ -4,12 +4,13 @@ export class User extends BaseDomainEntity {
   activeStatus: string
   confirmationStatus: boolean
   username: string
-  email: string
-  passwordHash: string
-  passwordSalt: string
-  confirmationCode: string
   passwordResetCode: string | null
-  constructor(email: string, passwordHash: string, passwordSalt: string, confirmationCode: string) {
+  constructor(
+    public email: string,
+    public passwordHash: string,
+    public passwordSalt: string,
+    public confirmationCode: string
+  ) {
     super()
     this.email = email
     this.passwordHash = passwordHash
