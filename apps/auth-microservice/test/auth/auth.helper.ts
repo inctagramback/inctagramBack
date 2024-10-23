@@ -1,13 +1,28 @@
 import { HttpStatus, INestApplication } from '@nestjs/common'
+import { CreateUserCommand } from 'apps/auth-microservice/src/features/auth/domain/entity/auth.entity'
 import * as request from 'supertest'
-import { endpoints } from '../../src/features/clients/api/admin-web/clients.controller'
 import { ClientViewModel } from '../../src/features/clients/db/clients.query.repository'
 import { ResultNotification } from '../../src/modules/core/validation/notification'
 
-export class ClientsHelper {
+
+
+const baseUrlAuth = '/api/auth'
+
+export const endpoints = {
+  authRegistration: () => `${baseUrlAuth}/registration`,
+  confirmationCodeResend: () => `${baseUrlAuth}/confirmation-code-resend`,
+  emailConfirmation: () => `${baseUrlAuth}/email-confirmation`,
+  resetPassword: () => `${baseUrlAuth}/reset-password`,
+  setPassword: () => `${baseUrlAuth}/set-password`,
+  login: () => `${baseUrlAuth}/login`,
+  refreshToken: () => `${baseUrlAuth}/refresh-token`,
+  logout: () => `${baseUrlAuth}/logout`,
+}
+
+export class UserHelper {
   constructor(private app: INestApplication) {}
-  async createClient(
-    command: CreateClientCommand,
+  async registrationUser(
+    command: CreateUserCommand,
     config: {
       expectedBody?: any
       expectedCode?: number
@@ -16,24 +31,28 @@ export class ClientsHelper {
     const expectedCode = config.expectedCode ?? HttpStatus.CREATED
 
     const response = await request(this.app.getHttpServer())
-      .post(endpoints.create())
+      .post(endpoints.authRegistration())
       .send(command)
-      .expect(expectedCode)
+
+    expect(response).toBeOk(201)
 
     if (config.expectedCode === HttpStatus.CREATED) {
-      const expectedCreatedClient = {
+      const expectedCreatedUser = {
         id: expect.any(String),
-        address: null,
+        activeStatus: 'true',
+        confirmationStatus: false,
+        passwordResetCode: null,
+        confirmationCode: expect.any(String),
+        createdAt: expect.any(Date),
+        updatedAt: expect.any(Date),
+        createBy: expect.any(String),
+        updateBy: expect.any(String),
         ...command,
       }
 
-      const {
-        body: {
-          data: { item: createdClient },
-        },
-      } = response
+      const { body: createdUser } = response
 
-      expect(createdClient).toEqual(expectedCreatedClient)
+      expect(createdUser).toEqual(expectedCreatedUser)
     }
 
     return response.body
@@ -42,12 +61,12 @@ export class ClientsHelper {
   async getClient(
     id: string,
     config: {
-      expectedClient?: any
+      expectedUser?: any
       expectedCode?: number
     } = {}
   ) {
     const { body: client } = await request(this.app.getHttpServer())
-      .get(endpoints.findOne(id))
+      .get(endpoints.)
       .expect(config.expectedCode ?? 200)
 
     if (config.expectedClient) {

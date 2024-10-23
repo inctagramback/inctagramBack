@@ -5,14 +5,14 @@ import {
   setGlobalFilters,
   setGlobalPrefix,
   setSwagger,
-  setValidationPipe,
 } from './app-settings'
+import { pipesSetup } from './pipesSetup'
 
 export function applyAppSettings(app) {
   setGlobalPrefix(app)
   setCookieParser(app)
   setCors(app)
-  setValidationPipe(app)
+  pipesSetup(app)
   setGlobalFilters(app)
   setDependencyInjection(app)
   setSwagger(app)

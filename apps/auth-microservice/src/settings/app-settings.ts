@@ -1,4 +1,3 @@
-import { BadRequestException, ValidationPipe } from '@nestjs/common'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { useContainer } from 'class-validator'
 import * as cookieParser from 'cookie-parser'
@@ -6,7 +5,10 @@ import { createWriteStream } from 'fs'
 import { get } from 'http'
 
 import { AuthMicroserviceModule } from '../auth-microservice.module'
-import { HttpExceptionFilter } from '../exception.filter'
+import {
+  ErrorExceptionFilter,
+  ValidationExceptionFilter,
+} from '../modules-core/config/exeption.filter'
 
 export function setGlobalPrefix(app) {
   app.setGlobalPrefix('api')
@@ -20,30 +22,8 @@ export function setCors(app) {
   app.enableCors()
 }
 
-export function setValidationPipe(app) {
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      stopAtFirstError: true,
-      exceptionFactory: errors => {
-        const errorsForResposnse = []
-        errors.forEach(e => {
-          const constraintsKeys = Object.keys(e.constraints)
-          constraintsKeys.forEach(ckey => {
-            errorsForResposnse.push({
-              message: e.constraints[ckey],
-              field: e.property,
-            })
-          })
-        })
-        throw new BadRequestException(errorsForResposnse)
-      },
-    })
-  )
-}
-
 export function setGlobalFilters(app) {
-  app.useGlobalFilters(new HttpExceptionFilter())
+  app.useGlobalFilters(new ErrorExceptionFilter(), new ValidationExceptionFilter())
 }
 
 export function setDependencyInjection(app) {
