@@ -1,69 +1,57 @@
-import { HttpStatus, INestApplication } from '@nestjs/common'
-import { CreateUserCommand } from 'apps/auth-microservice/src/features/auth/domain/entity/auth.entity'
+import { INestApplication } from '@nestjs/common'
 import { User } from 'apps/auth-microservice/src/features/users/domain/entity/user.entity'
-import * as request from 'supertest'
+import { UserTestService } from './user.testService'
 
 const baseUrl = '/api/users'
+
+export const expectedCreatedUser: User = {
+  id: expect.any(String),
+  activeStatus: 'true',
+  confirmationStatus: true,
+  passwordResetCode: null,
+  confirmationCode: expect.any(String),
+  confirmedAt: expect.any(Date),
+  createdAt: expect.any(Date),
+  updatedAt: expect.any(Date),
+  createBy: expect.any(String),
+  updateBy: expect.any(String),
+  username: expect.any(String),
+  email: expect.any(String),
+  passwordHash: expect.any(String),
+  passwordSalt: expect.any(String),
+}
 
 export const endpoints = {
   createUser: () => `${baseUrl}/`,
   findUserById: (id: string) => `${baseUrl}/${id}`,
 }
 
+export class ExpectedUser {}
+
 export class UserHelper {
-  constructor(private app: INestApplication) {}
-  async createUser(
-    command: CreateUserCommand,
-    config: {
-      expectedBody?: any
-      expectedCode?: number
-    } = {}
-  ): Promise<User> {
-    const expectedCode = config.expectedCode ?? HttpStatus.CREATED
+  constructor(
+    private app: INestApplication,
+    private userService: UserTestService
+  ) {}
+  async createUser(createUserData): Promise<User> {
+    await this.userService.createUser(createUserData)
 
-    const response = await request(this.app.getHttpServer())
-      .post(endpoints.createUser())
-      .send(command)
+    const user = await this.userService.findUserByEmailOrUsername(createUserData.login)
 
-    expect(response).toBeOk(201)
+    expect(user).toEqual(expectedCreatedUser)
 
-    if (config.expectedCode === HttpStatus.CREATED) {
-      const expectedCreatedUser = {
-        id: expect.any(String),
-        activeStatus: 'true',
-        confirmationStatus: true,
-        passwordResetCode: null,
-        confirmationCode: expect.any(String),
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
-        createBy: expect.any(String),
-        updateBy: expect.any(String),
-        ...command,
-      }
-
-      const { body: createdUser } = response
-
-      expect(createdUser).toEqual(expectedCreatedUser)
-    }
-
-    return response.body
+    return user
   }
 
-  async getUser(
-    id: string,
-    config: {
-      expectedUser?: any
-      expectedCode?: number
-    } = {}
-  ): Promise<User> {
-    const response = await request(this.app.getHttpServer()).get(endpoints.findUserById(id))
+  async getUserById(id: string): Promise<User> {
+    const user = await this.userService.findUserById(id)
+    expect(user).toEqual(expectedCreatedUser)
+    return user
+  }
 
-    expect(response).toBeOk(200)
-
-    if (config.expectedUser) {
-      expect(response.body).toEqual(config.expectedUser)
-    }
-
-    return response.body
+  async getUserByEmailOrUsername(emailOrLogin: string): Promise<User> {
+    const user = await this.userService.findUserByEmailOrUsername(emailOrLogin)
+    expect(user).toEqual(expectedCreatedUser)
+    return user
   }
 }

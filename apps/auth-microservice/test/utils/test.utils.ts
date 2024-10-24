@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common'
-import { Test, TestingModuleBuilder } from '@nestjs/testing'
+import { Test, TestingModule, TestingModuleBuilder } from '@nestjs/testing'
 import { AuthMicroserviceModule } from 'apps/auth-microservice/src/auth-microservice.module'
+import { UserRepository } from 'apps/auth-microservice/src/features/users/db/users.repository'
 import { applyAppSettings } from 'apps/auth-microservice/src/settings/apply-app-settings'
 import { PrismaService } from 'libs/service/prisma.Service'
 import { dropSqlDataBase } from './dropSqlDataBase'
@@ -12,6 +13,7 @@ export const getAppAndCleanDB = async (
   try {
     const testingModuleBuilder: TestingModuleBuilder = Test.createTestingModule({
       imports: [AuthMicroserviceModule],
+      providers: [UserRepository],
     })
     /*       .overrideProvider(UsersService)
       .useValue(UserServiceMockObject);
@@ -24,21 +26,20 @@ export const getAppAndCleanDB = async (
     const app: INestApplication = testingAppModule.createNestApplication()
     await applyAppSettings(app)
     await app.init()
-
     const prisma = new PrismaService()
     await dropSqlDataBase(prisma)
 
     /*     const databaseConnection = app.get<Connection>(getConnectionToken()); */
     const httpServer = app.getHttpServer()
-
-    return {
-      app,
-      /*       databaseConnection, */
-      testingAppModule,
-      httpServer,
-    }
+    const startTestObject: StartTestObject = { app: app, testingAppModule: testingAppModule }
+    return startTestObject
   } catch (error) {
     console.error('Error in getAppAndCleanDB:', error)
     throw error
   }
+}
+
+export type StartTestObject = {
+  app: INestApplication
+  testingAppModule: TestingModule
 }

@@ -1,10 +1,6 @@
 import { HttpStatus, INestApplication } from '@nestjs/common'
 import { CreateUserCommand } from 'apps/auth-microservice/src/features/auth/domain/entity/auth.entity'
 import * as request from 'supertest'
-import { ClientViewModel } from '../../src/features/clients/db/clients.query.repository'
-import { ResultNotification } from '../../src/modules/core/validation/notification'
-
-
 
 const baseUrlAuth = '/api/auth'
 
@@ -19,7 +15,7 @@ export const endpoints = {
   logout: () => `${baseUrlAuth}/logout`,
 }
 
-export class UserHelper {
+export class AuthHelper {
   constructor(private app: INestApplication) {}
   async registrationUser(
     command: CreateUserCommand,
@@ -28,13 +24,14 @@ export class UserHelper {
       expectedCode?: number
     } = {}
   ): Promise<ResultNotification<{ item: ClientViewModel }>> {
+    // изменить Promise
     const expectedCode = config.expectedCode ?? HttpStatus.CREATED
 
     const response = await request(this.app.getHttpServer())
       .post(endpoints.authRegistration())
       .send(command)
 
-    expect(response).toBeOk(201)
+    expect(response).toBeOk(expectedCode)
 
     if (config.expectedCode === HttpStatus.CREATED) {
       const expectedCreatedUser = {
@@ -50,63 +47,37 @@ export class UserHelper {
         ...command,
       }
 
-      const { body: createdUser } = response
+      const { body: registratedUser } = response
 
-      expect(createdUser).toEqual(expectedCreatedUser)
+      expect(registratedUser).toEqual(expectedCreatedUser)
     }
 
     return response.body
   }
 
-  async getClient(
-    id: string,
-    config: {
-      expectedUser?: any
-      expectedCode?: number
-    } = {}
-  ) {
-    const { body: client } = await request(this.app.getHttpServer())
-      .get(endpoints.)
-      .expect(config.expectedCode ?? 200)
-
-    if (config.expectedClient) {
-      expect(client).toEqual(config.expectedClient)
-    }
-
-    return client
-  }
-
-  async updateClient(
-    id: string,
-    updateCommand: any,
+  async loginUser(
+    command: CreateUserCommand,
     config: {
       expectedCode?: number
     } = {}
   ) {
-    const expectedCode = config.expectedCode ?? HttpStatus.NO_CONTENT
-    // get client before update
-    const clientBeforeUpdate = await this.getClient(id)
+    // изменить Promise
+    const expectedCode = config.expectedCode ?? HttpStatus.OK
+    const response = await request(this.app.getHttpServer()).post(endpoints.login()).send(command)
 
-    const updateResponse: any = await request(this.app.getHttpServer())
-      .patch(endpoints.updateOne(id))
-      .send(updateCommand)
-      .expect(expectedCode)
+    expect(response).toBeOk(expectedCode)
 
-    if (expectedCode === HttpStatus.NO_CONTENT) {
-      const clientAfterUpdate = await this.getClient(id)
+    const accessToken = response.body.accessToken
 
-      expect(clientAfterUpdate).toEqual({
-        ...clientBeforeUpdate,
-        ...updateCommand,
-      })
-    } else {
-      const clientAfterNoUpdate = await this.getClient(id)
+    // Извлекаем cookie с refresh token
+    const cookies = response.headers['set-cookie']
 
-      expect(clientAfterNoUpdate).toEqual({
-        ...clientBeforeUpdate,
-      })
-    }
+    // Поиск cookie с именем "refreshToken" (замените на реальное имя, если оно другое)
+    const refreshTokenCookie = response.headers['set-cookie'][0]
 
-    return updateResponse.body
+    // Извлекаем значение refresh token
+    const refreshToken = refreshTokenCookie.split(';')[0].split('=')[1]
+
+    return { accessToken: accessToken, refreshToken: refreshToken }
   }
 }

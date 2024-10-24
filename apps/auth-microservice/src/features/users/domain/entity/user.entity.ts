@@ -3,15 +3,17 @@ import { BaseDomainEntity } from 'apps/auth-microservice/src/modules-core/core/e
 export class User extends BaseDomainEntity {
   activeStatus: string
   confirmationStatus: boolean
-  username: string
+  confirmedAt: Date
   passwordResetCode: string | null
   constructor(
+    public username: string,
     public email: string,
     public passwordHash: string,
     public passwordSalt: string,
     public confirmationCode: string
   ) {
     super()
+    this.username = username
     this.email = email
     this.passwordHash = passwordHash
     this.passwordSalt = passwordSalt

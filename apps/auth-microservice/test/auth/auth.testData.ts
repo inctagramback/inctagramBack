@@ -1,9 +1,15 @@
 import { CreateUserCommand } from 'apps/auth-microservice/src/features/auth/domain/entity/auth.entity'
 
-export const user1CreateCommand = new CreateUserCommand(
-  'dzerdevwarnd@gmail.com',
-  'dzerdev',
-  'qwerty'
+export const user1RegistrationCommand = new CreateUserCommand(
+  'dzerdevwarnd1@gmail.com',
+  'dzerdev1',
+  'qwerty123'
+)
+
+export const user2RegistrationCommand = new CreateUserCommand(
+  'dzerdevwarnd2@gmail.com',
+  'dzerdev2',
+  'qwerty123'
 )
 
 let user1AccessToken: string
